@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐭 Whack-a-Rat Game 🐭</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #gameContainer {
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #startScreen {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        #gameScreen {
+            display: none;
+        }
+
+        #startButton {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 24px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        #startButton:active {
+            transform: scale(0.95);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .stat-box {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background: linear-gradient(180deg, #87ceeb 0%, #90ee90 100%);
+            border: 4px solid #333;
+            border-radius: 15px;
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            cursor: crosshair;
+        }
+
+        .hole {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background-color: #8B4513;
+            border-radius: 50%;
+            border: 3px solid #654321;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rat {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: none;
+            cursor: pointer;
+            font-size: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s;
+        }
+
+        .rat:active {
+            transform: scale(0.8);
+        }
+
+        #gameOverScreen {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-over-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .final-score {
+            font-size: 36px;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .game-result {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .won {
+            color: #00aa00;
+        }
+
+        .lost {
+            color: #ff0000;
+        }
+
+        #restartButton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        #restartButton:active {
+            transform: scale(0.95);
+        }
+
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <h1>🐭 WHACK-A-RAT 🐭</h1>
+    
+    <!-- Start Screen -->
+    <div id="startScreen">
+        <div class="instructions">
+            <p>🎮 TAP the rats that pop up!</p>
+            <p>⏱️ You have 60 seconds</p>
+            <p>⭐ Each rat = 150 points</p>
+            <p>🏆 Score 2000+ to WIN!</p>
+        </div>
+        <button id="startButton">TAP TO START</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen">
+        <div class="stats">
+            <div class="stat-box">
+                Score: <span id="score">0</span>
+                <div class="stat-label">Points</div>
+            </div>
+            <div class="stat-box">
+                Time: <span id="time">60</span>s
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+        <div id="gameArea"></div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+        <div class="game-over-title">GAME OVER!</div>
+        <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+        <div class="game-result" id="gameResult"></div>
+        <button id="restartButton">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let timeLeft = 60;
+    let gameActive = false;
+    let activeRats = [];
+    let holes = [];
+
+    // Create holes
+    function createHoles() {
+        const gameArea = document.getElementById('gameArea');
+        gameArea.innerHTML = '';
+        holes = [];
+
+        const holePositions = [
+            {x: 50, y: 50}, {x: 200, y: 50}, {x: 350, y: 50}, {x: 500, y: 50},
+            {x: 50, y: 150}, {x: 200, y: 150}, {x: 350, y: 150}, {x: 500, y: 150},
+            {x: 50, y: 250}, {x: 200, y: 250}, {x: 350, y: 250}, {x: 500, y: 250}
+        ];
+
+        holePositions.forEach(pos => {
+            const hole = document.createElement('div');
+            hole.classList.add('hole');
+            hole.style.left = pos.x + 'px';
+            hole.style.top = pos.y + 'px';
+            gameArea.appendChild(hole);
+            holes.push({x: pos.x, y: pos.y, element: hole});
+        });
+    }
+
+    function createRat() {
+        if (!gameActive) return;
+
+        const randomHole = holes[Math.floor(Math.random() * holes.length)];
+        const rat = document.createElement('div');
+        rat.classList.add('rat');
+        rat.innerHTML = '🐭';
+        rat.style.left = (randomHole.x - 25) + 'px';
+        rat.style.top = (randomHole.y - 25) + 'px';
+
+        let clicked = false;
+
+        rat.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!clicked) {
+                clicked = true;
+                score += 150;
+                document.getElementById('score').innerText = score;
+                rat.remove();
+                activeRats = activeRats.filter(r => r !== rat);
+            }
+        });
+
+        rat.addEventListener('click', () => {
+            if (!clicked) {
+                clicked = true;
+                score += 150;
+                document.getElementById('score').innerText = score;
+                rat.remove();
+                activeRats = activeRats.filter(r => r !== rat);
+            }
+        });
+
+        document.getElementById('gameArea').appendChild(rat);
+        activeRats.push(rat);
+
+        // Random rat duration (800-1200ms)
+        const ratDuration = 800 + Math.random() * 400;
+        setTimeout(() => {
+            if (rat.parentNode) {
+                rat.remove();
+                activeRats = activeRats.filter(r => r !== rat);
+            }
+        }, ratDuration);
+    }
+
+    function startGame() {
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        document.getElementById('gameOverScreen').style.display = 'none';
+
+        score = 0;
+        timeLeft = 60;
+        gameActive = true;
+        activeRats = [];
+
+        document.getElementById('score').innerText = '0';
+        document.getElementById('time').innerText = '60';
+
+        createHoles();
+
+        // Spawn rats at random intervals
+        const spawnInterval = setInterval(() => {
+            if (gameActive) {
+                createRat();
+            }
+        }, 600 + Math.random() * 400);
+
+        // Countdown timer
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('time').innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                gameActive = false;
+                clearInterval(spawnInterval);
+                clearInterval(timerInterval);
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function endGame() {
+        // Remove all active rats
+        activeRats.forEach(rat => {
+            if (rat.parentNode) rat.remove();
+        });
+        activeRats = [];
+
+        document.getElementById('gameScreen').style.display = 'none';
+        document.getElementById('gameOverScreen').style.display = 'block';
+        document.getElementById('finalScore').innerText = score;
+
+        const resultElement = document.getElementById('gameResult');
+        if (score >= 2000) {
+            resultElement.innerHTML = '🏆 YOU WON! 🏆';
+            resultElement.classList.add('won');
+            resultElement.classList.remove('lost');
+        } else {
+            resultElement.innerHTML = '💔 YOU LOST 💔';
+            resultElement.classList.add('lost');
+            resultElement.classList.remove('won');
+        }
+    }
+
+    document.getElementById('startButton').addEventListener('click', startGame);
+    document.getElementById('startButton').addEventListener('touchstart', startGame);
+    document.getElementById('restartButton').addEventListener('click', startGame);
+    document.getElementById('restartButton').addEventListener('touchstart', startGame);
+</script>
+
+</body>
+</html>
